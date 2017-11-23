@@ -1,5 +1,11 @@
 package sample.easy;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
 
 public class SampleEasy {
@@ -10,8 +16,8 @@ public class SampleEasy {
 	// Database credentials
 	static final String USER = "root";
 	static final String PASS = "930717bai";
-	
-	public static void batchStatement(Connection conn){
+
+	public static void batchStatement(Connection conn) {
 		try {
 			Statement state = conn.createStatement();
 			conn.setAutoCommit(false);
@@ -19,7 +25,7 @@ public class SampleEasy {
 			String sql2 = "";
 			state.addBatch(sql1);
 			state.addBatch(sql2);
-			state.executeBatch(); //return an array, 每个语句的更新计数
+			state.executeBatch(); // return an array, 每个语句的更新计数
 			conn.commit();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -61,7 +67,9 @@ public class SampleEasy {
 			// 详细的讲解 见 Note.md
 			state = conn.createStatement();
 			// 上一句等同于下一句 因为上一句省略了默认result set的参数
-//			Statement stmt = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			// Statement stmt =
+			// conn.createStatement(ResultSet.TYPE_FORWARD_ONLY,
+			// ResultSet.CONCUR_READ_ONLY);
 			String sql = "SELECT id, first, last, age FROM Employees";
 
 			System.out.println("Able to retrieve data: " + state.execute(sql));
@@ -117,6 +125,66 @@ public class SampleEasy {
 
 	}
 
+	@SuppressWarnings("resource")
+	public static void stream(Connection conn) {
+		PreparedStatement pState = null;
+		ResultSet rs = null;
+
+		try {
+			File file = new File("xml_data.xml");
+//			long fileLength = file.length();
+			FileInputStream fileInputStream = new FileInputStream(file);
+
+			String sql = "INSERT INTO XML_DATA VALUES (?, ?)";
+			pState = conn.prepareStatement(sql);
+			pState.setInt(1, 125);
+			pState.setAsciiStream(2, fileInputStream, (int) file.length());
+			pState.execute();
+
+			fileInputStream.close();
+
+			sql = "SELECT DATA FROM XML_DATA WHERE ID = 125";
+			pState = conn.prepareStatement(sql);
+			rs = pState.executeQuery();
+
+			while (rs.next()) {
+				InputStream inputStream = rs.getAsciiStream(1);
+				int c;
+				ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				while ((c = inputStream.read()) != -1) {
+					bos.write(c);
+				}
+				System.out.println(bos.toString());
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null) {
+					rs.close();
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+
+			}
+			try {
+				if (pState != null) {
+					pState.close();
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
 	public static void main(String[] args) {
 
 		Connection conn = null;
@@ -132,16 +200,16 @@ public class SampleEasy {
 
 			System.out.println("Connecting database JDBCTEST");
 			conn = DriverManager.getConnection(DB_URL, USER, PASS);
-			
-//			Set auto commit, default is true
-//			conn.setAutoCommit(true);
-			
-//			commit & rollback
-//			conn.commit();
-//			conn.rollback();
-//			rollback can rollback to a save point
-//			Savepoint savepoint = conn.setSavepoint(name);
-//			conn.releaseSavepoint(savepoint);
+
+			// Set auto commit, default is true
+			// conn.setAutoCommit(true);
+
+			// commit & rollback
+			// conn.commit();
+			// conn.rollback();
+			// rollback can rollback to a save point
+			// Savepoint savepoint = conn.setSavepoint(name);
+			// conn.releaseSavepoint(savepoint);
 
 			// Properties info = new Properties( );
 			// info.put( "user", "root" );
@@ -153,6 +221,9 @@ public class SampleEasy {
 
 			// PreparedStatement
 			preparedStatement(conn);
+			
+			// Stream
+			stream(conn);
 
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
