@@ -8,7 +8,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+
 public class SampleEasy {
+
+	/*--- JDBC --- */
+
 	// JDBC driver name and database URL
 	static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
 	static final String DB_URL = "jdbc:mysql://localhost:3306/JDBCTEST";
@@ -132,7 +143,7 @@ public class SampleEasy {
 
 		try {
 			File file = new File("xml_data.xml");
-//			long fileLength = file.length();
+			// long fileLength = file.length();
 			FileInputStream fileInputStream = new FileInputStream(file);
 
 			String sql = "INSERT INTO XML_DATA VALUES (?, ?)";
@@ -185,8 +196,7 @@ public class SampleEasy {
 		}
 	}
 
-	public static void main(String[] args) {
-
+	public static void jdbc() {
 		Connection conn = null;
 		try {
 
@@ -221,7 +231,7 @@ public class SampleEasy {
 
 			// PreparedStatement
 			preparedStatement(conn);
-			
+
 			// Stream
 			stream(conn);
 
@@ -240,5 +250,67 @@ public class SampleEasy {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public static void mappingFile() {
+
+		Configuration cfg = new Configuration();
+		cfg.configure("hibernate.cfg.xml");
+
+		SessionFactory factory = cfg.buildSessionFactory();
+		Session session = factory.openSession();
+		Transaction transaction = session.beginTransaction();
+
+		Employee e1 = new Employee();
+		e1.setId(111);
+		e1.setAge(30);
+		e1.setFirst("Max");
+		e1.setLast("Su");
+
+		session.persist(e1);
+
+		transaction.commit();
+		session.close();
+
+		System.out.println("Saving data successfully");
+	}
+
+	/*--- Hibernate --- */
+
+	public static void annotation() {
+		final StandardServiceRegistry registry = (StandardServiceRegistry) new StandardServiceRegistryBuilder().configure("hibernate.cfg.xml");
+		SessionFactory sessionFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
+		
+		Session session = sessionFactory.openSession();
+		Transaction transaction = session.beginTransaction();
+		
+		EmployeeAnnotation ea = new EmployeeAnnotation();
+		ea.setId(112);
+		ea.setAge(15);
+		ea.setLast("Bai");
+		ea.setFirst("Yubo");
+		
+		EmployeeAnnotation ea1 = new EmployeeAnnotation();
+		ea1.setId(113);
+		ea1.setAge(15);
+		ea1.setLast("Yang");
+		ea1.setFirst("Mike");
+		
+		session.persist(ea);
+		session.persist(ea1);
+		
+		transaction.commit();
+		session.close();
+		System.out.println("Saving successfully");
+	}
+
+	public static void hibernate() {
+		mappingFile();
+		annotation();
+	}
+
+	public static void main(String[] args) {
+		// jdbc();
+		hibernate();
 	}
 }
