@@ -278,7 +278,7 @@ public class SampleEasy {
 	/*--- Hibernate --- */
 
 	public static void annotation() {
-		final StandardServiceRegistry registry = (StandardServiceRegistry) new StandardServiceRegistryBuilder().configure("hibernate.cfg.xml");
+		final StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure("hibernate.cfg.xml").build();
 		SessionFactory sessionFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
 		
 		Session session = sessionFactory.openSession();
@@ -305,12 +305,12 @@ public class SampleEasy {
 	}
 
 	public static void hibernate() {
-		mappingFile();
-		annotation();
+//		mappingFile();
+//		annotation();
 	}
 
 	public static void main(String[] args) {
-		// jdbc();
+//		 jdbc();
 		hibernate();
 	}
 }

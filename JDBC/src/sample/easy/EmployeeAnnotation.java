@@ -1,13 +1,13 @@
 package sample.easy;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import org.hibernate.annotations.Entity;
 import org.hibernate.annotations.Table;
 
-@Entity
-@Table(appliesTo = "Employees")
+@Entity(name="JDBCTEST.Employees")
+@Table(appliesTo = "JDBCTEST.Employees")
 public class EmployeeAnnotation {
 	@Id
 	@Column(name="Id")
